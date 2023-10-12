@@ -88,12 +88,6 @@ class TreeTable:
         root = creatTree(self, root_index)
         return root
 
-    def getSolution(self):
-        ans = []
-        for item in self.rows:
-            ans.append(item.symbol.name)
-        return ans
-
 
 class Row:
 
