@@ -7,11 +7,11 @@ import time
 problemSet = {
         #"问题名称":["问题名称",数据集大小,输入变量数],
          "Sphere5":["Sphere5"],
-         "Poly10": ["Poly10"],
-        "Dic1":["Dic1"],
-        "Dic3": ["Dic3"],
-        "Dic4": ["Dic4"],
-        "Dic5": ["Dic5"],
+        #  "Poly10": ["Poly10"],
+        # "Dic1":["Dic1"],
+        # "Dic3": ["Dic3"],
+        # "Dic4": ["Dic4"],
+        # "Dic5": ["Dic5"],
         # "Nico4":["Nico4"],
         # "Nico6": ["Nico6"],
         # "Nico9": ["Nico9"],
@@ -55,11 +55,13 @@ if __name__ == '__main__':
     # 对problemSet里的每个实验进行30次独立重复实验
     # 可以根据自身需要对实验进行删减，直接将probleSet里的实验进行注释即可
     for problem in problemSet:
-        do = partial(train,name=problemSet[problem][0],Epoch=Epoch,learning_rate = learning_rate,batch_size=batch_size,layer_num=layer_num)
+        name = problemSet[problem][0]
+        do = partial(train, name, Epoch, learning_rate,batch_size, layer_num)
+        #do = partial(train,name=problemSet[problem][0],Epoch=Epoch,learning_rate = learning_rate,batch_size=batch_size,layer_num=layer_num)
         # 并行计算
-        pool.map(do, cou)
-        # print(str(problem) + " 任务完成")
-        # print("当前时间：" + str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
+        pool.map(do,cou)
+        print(str(problem) + " 任务完成")
+        print("当前时间：" + str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
     # 结束计时
     end_time = time.time()
     # 计算时间差

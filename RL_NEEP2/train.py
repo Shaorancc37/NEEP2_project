@@ -35,7 +35,7 @@ def get_data(fun_name):
     return train_x_list,train_y_list,test_x_list,test_y_list
 
 
-def train(name,Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 1,count=0):
+def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 1,cou=0):
     print("实验 ： "+str(name)+" 开始")
     # 记录每个Epoch数据
     Train_MSE_List = []
@@ -159,7 +159,7 @@ def train(name,Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 1,c
     train_path,test_path = creatFile(path)
 
     # 写入文件
-    DateLog = DataFrame(count,
+    DateLog = DataFrame(cou,
                         train_path,
                         test_path,
                         Train_MSE_List,
