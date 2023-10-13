@@ -10,7 +10,6 @@ import time
 from pathlib import Path
 
 device = ("cpu")
-torch.manual_seed(1234)
 
 def get_data(fun_name):
     train_x_list = []
@@ -35,7 +34,14 @@ def get_data(fun_name):
     return train_x_list,train_y_list,test_x_list,test_y_list
 
 
+def updateSeed(cou):
+    torch.manual_seed(cou)
+    torch.cuda.manual_seed_all(cou)
+    np.random.seed(cou)
+
+
 def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 1,cou=0):
+    updateSeed(cou)
     print("实验 ： "+str(name)+" 开始")
     # 记录每个Epoch数据
     Train_MSE_List = []

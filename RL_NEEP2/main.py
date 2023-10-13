@@ -44,7 +44,7 @@ if __name__ == '__main__':
     pool = multiprocessing.Pool(nb_cpu - 6)
 
     # 设置Epoch 、 独立重复实验次数
-    batch_size = 50
+    batch_size = 100
     layer_num = 1
     learning_rate = 1e-3
     Epoch = 250  # 代数
