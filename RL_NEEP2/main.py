@@ -47,7 +47,7 @@ if __name__ == '__main__':
     batch_size = 100
     layer_num = 1
     learning_rate = 1e-3
-    Epoch = 250  # 代数
+    Epoch = 100  # 代数
     count = 30  # 独立重复次数
     cou = []
     for i in range(count):
