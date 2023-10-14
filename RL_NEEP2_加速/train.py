@@ -9,7 +9,6 @@ import time
 
 
 device = ("cpu")
-torch.manual_seed(1234)
 
 def get_data(fun_name):
     train_x_list = []

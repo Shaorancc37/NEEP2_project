@@ -6,7 +6,7 @@ import time
 
 problemSet = {
         #"问题名称":["问题名称",数据集大小,输入变量数],
-         "Sphere5":["Sphere5"],
+         #"Sphere5":["Sphere5"],
         #  "Poly10": ["Poly10"],
         # "Dic1":["Dic1"],
         # "Dic3": ["Dic3"],
@@ -20,19 +20,19 @@ problemSet = {
         # "Nico15": ["Nico15"],
         #"Nico16": ["Nico16"],
         # "Nico19": ["Nico19"],
-        # "Nico20": ["Nico20"],
-        # "Nico21": ["Nico21"],
-        #"Koza1": ["Koza1"],
-        # "Pagie1":["Pagie1"],
-        #"Vlad3":["Vlad3"],
-        # "Nguyen6":["Nguyen6"],
-        # "Nguyen7":["Nguyen7"]
+        #"Nico20": ["Nico20"],
+        #"Nico21": ["Nico21"],
+        "Koza1": ["Koza1"],
+        "Pagie1":["Pagie1"],
+        "Vlad3":["Vlad3"],
+        "Nguyen6":["Nguyen6"],
+        "Nguyen7":["Nguyen7"],
         # "Yacht":["Yacht"],
         # "Airfoil":["Airfoil"],
         # "Concrete":["Concrete"],
         # "Energy":["Energy"],
         # "FishToxicity":["FishToxicity"],
-        #"Forestfires":["Forestfires"]
+        # "Forestfires":["Forestfires"]
     }
 
 if __name__ == '__main__':
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # 获取cpu数目
     nb_cpu = multiprocessing.cpu_count()
     # # 创建cpu进程池
-    pool = multiprocessing.Pool(nb_cpu - 6)
+    pool = multiprocessing.Pool(nb_cpu - 4)
 
     # 设置Epoch 、 独立重复实验次数
     batch_size = 100
