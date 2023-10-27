@@ -12,11 +12,12 @@ def getNEEP2Analyse(problem):
             reader = csv.reader(file)
             for row in reader:
                 temp = row
-        ans.append(temp[0])
+        ans.append(float(temp[0]))
+    print(np.median(ans))
     return np.median(ans)
 
 
 if __name__ == '__main__':
-    problem = "Sphere5"
+    problem = "Forestfires"
     # 分析NEEP230次实验的结果，得到每个实验的最好结果中位数
     getNEEP2Analyse(problem)

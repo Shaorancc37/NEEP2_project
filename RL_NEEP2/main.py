@@ -70,4 +70,4 @@ if __name__ == '__main__':
     print(f"执行时间：{execution_time}秒")
 
 
-    #train(name="Sphere5",Epoch=2,learning_rate = 1e-3,batch_size = 50,layer_num = 1,count=0)
+    #train(name="Sphere5",Epoch=2,learning_rate = 1e-3,batch_size = 50,layer_num = 1,cou=0)
