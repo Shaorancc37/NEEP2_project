@@ -154,14 +154,10 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
         # 更新 符号概率 途径网络
         reinforce_loss1 = torch.sum((reward - baseline) * log_prob1_list.sum(dim=0)) / batch_size
         reinforce_loss2 = torch.sum((reward - baseline) * log_prob2_list.sum(dim=0)) / batch_size
-        loss = reinforce_loss1 + reinforce_loss2
+        loss = -1*(reinforce_loss1 + reinforce_loss2)
         optimizer.zero_grad()
-        loss.backward(retain_graph=True)
-        #print(loss)
-        for i in range(5):
-            optimizer.step()
-        # 清除计算图，以释放内存
-        torch.cuda.empty_cache()
+        loss.backward()
+        optimizer.step()
 
     # 创建存放训练集和测试集的文件夹
     path = "../result/log/"+name
