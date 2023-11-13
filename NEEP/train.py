@@ -1,10 +1,12 @@
-from dataFrame import DataFrame, creatFile
-from symbol import Symbol
-from symbol import SymbolLibrary
+from NEEP.Net import Net
+from NEEP.decoder import Decoder
+from RL_NEEP2 import symbol
+from RL_NEEP2.dataFrame import DataFrame, creatFile
+from RL_NEEP2.symbol import Symbol
+from RL_NEEP2.symbol import SymbolLibrary
 import numpy as np
-import symbol
-from actornet import ActorNet
-from node import TreeDecoder
+
+from RL_NEEP2.node import TreeDecoder
 import torch
 import time
 from pathlib import Path
@@ -80,7 +82,7 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
 
     symbol_set = SymbolLibrary(symbol_list)
 
-    actorNet = ActorNet(batch_size,32,32,layer_num,symbol_set.length,symbol_set,4,device).to(device)
+    actorNet = Net(batch_size,32,32,layer_num,symbol_set.length,symbol_set,31,device).to(device)
     optimizer = torch.optim.AdamW(actorNet.parameters(),lr=learning_rate)  # 使用Adam优化器
 
     train_obj_mse = np.inf
@@ -91,10 +93,8 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
     test_obj_solution = None
 
     for i in range(Epoch):
-        # TODO 网络需要优化加速75行 耗时2.7s
-        tree_table , log_prob1_list, log_prob2_list = actorNet()
-        # TODO 将一个Batch的树表解码为树，分别在 训练集 和 测试集 上计算MSE、NMSE、NRMSE、Reward等值
-        # TODO 网络需要优化加速84 - 105行 耗时2.7s
+        action , log_prob1_list = actorNet()
+
         root = []
         train_mse_list = []
         train_nmse_list = []
@@ -105,7 +105,7 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
         test_nrmse_list = []
         test_reward_list = []
         for j in range(batch_size):
-            root.append(tree_table[j].decodeTreeTable())
+            root.append(Decoder(j,action,symbol_set).creat())
             train_mse , test_mse,train_nmse ,test_nmse,train_nrmse,test_nrmse,train_reward,test_reward = TreeDecoder(root[j],train_x_list,train_y_list,test_x_list,test_y_list,symbol_set).calculate()
             # 将值加到列表里
             train_mse_list.append(train_mse)
@@ -122,15 +122,16 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
         train_max_reward = max(train_reward_list)
         test_min_mse = min(test_mse_list)
         test_max_reward = max(test_reward_list)
+
         # 更新全局最优解
         if train_obj_mse>train_min_mse:
             train_obj_mse = train_min_mse
-            train_obj_solution = tree_table[train_mse_list.index(train_min_mse)].getSolution()
+            train_obj_solution = Decoder(train_mse_list.index(train_min_mse),action,symbol_set).getString()#tree_table[train_mse_list.index(train_min_mse)].getSolution()
         if train_obj_reward<train_max_reward:
             train_obj_reward = train_max_reward
         if test_obj_mse>test_min_mse:
             test_obj_mse = test_min_mse
-            test_obj_solution = tree_table[test_mse_list.index(test_min_mse)].getSolution()
+            test_obj_solution = Decoder(test_mse_list.index(test_min_mse),action,symbol_set).getString()#tree_table[test_mse_list.index(test_min_mse)].getSolution()
         if test_obj_reward<test_max_reward:
             test_obj_reward = test_max_reward
 
@@ -138,12 +139,12 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
         Train_Best_MSE_List.append(train_obj_mse)
         Train_Reward_List.append(train_max_reward)
         Train_Best_Reward_List.append(train_obj_reward)
-        Train_BestSolution.append(tree_table[train_mse_list.index(train_min_mse)].getSolution())
+        Train_BestSolution.append(Decoder(train_mse_list.index(train_min_mse),action,symbol_set).getString())
         Test_MSE_List.append(test_min_mse)
         Test_Best_MSE_List.append(test_obj_mse)
         Test_Reward_List.append(test_max_reward)
         Test_Best_Reward_List.append(test_obj_reward)
-        Test_BestSolution.append(tree_table[test_mse_list.index(test_min_mse)].getSolution())
+        Test_BestSolution.append(Decoder(test_mse_list.index(test_min_mse),action,symbol_set).getString())
 
 
         # print(" Epoch = "+str(i+1)+"  best_mse = "+str(obj_mse))
@@ -153,8 +154,7 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
 
         # 更新 符号概率 途径网络
         reinforce_loss1 = torch.sum((reward - baseline) * log_prob1_list.sum(dim=0)) / batch_size
-        reinforce_loss2 = torch.sum((reward - baseline) * log_prob2_list.sum(dim=0)) / batch_size
-        loss = -1*(reinforce_loss1 + reinforce_loss2)
+        loss = -1*(reinforce_loss1 )
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -187,5 +187,6 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
     print("保存完毕")
 
 
-
+if __name__ == '__main__':
+    train(name="Sphere5", Epoch=100, learning_rate=1e-3, batch_size=10, layer_num=1, cou=0)
 

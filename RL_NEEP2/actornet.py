@@ -99,7 +99,7 @@ class ActorNet(nn.Module):
         # 送入网络获得输出
             x = self.get_lstm_input(lstm_input)
             x = self.input_layer(x.to(torch.float32))
-            output, (h_out, c_out) = self.lstm(x)
+            output, (h_out, c_out) = self.lstm(x,(h_out, c_out))
             # 进行batchnorm的计算
             output = self.bn(output)
             # TODO 这部分是计算 符号概率 的输出

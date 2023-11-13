@@ -74,7 +74,7 @@ def updateTreeTable(lstm_input_type ,symbol_set,output_symbol,action1,action2,tr
                 # 得到终止节点的下标区域
                 star_index, end_index = getTerimIndex(symbol_set)
                 # 建立分布，采样
-                temp_dist = Categorical(output_symbol[0][star_index:])
+                temp_dist = Categorical(output_symbol[i][star_index:])
                 action = temp_dist.sample()
                 action = action + torch.tensor(star_index)
                 # 在action1中更新action
