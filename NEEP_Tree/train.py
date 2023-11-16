@@ -1,4 +1,4 @@
-from NEEP.Net import Net
+from NEEP_Tree.Net import Net
 from NEEP.decoder import Decoder
 from RL_NEEP2 import symbol
 from RL_NEEP2.dataFrame import DataFrame, creatFile
@@ -130,7 +130,7 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
         if train_obj_reward<train_max_reward:
             train_obj_reward = train_max_reward
         if test_obj_mse>test_min_mse:
-            print("Epoch = "+str(i)+ " ---- "+str(test_min_mse))
+            #print("Epoch = "+str(i)+ " ---- "+str(test_min_mse))
             test_obj_mse = test_min_mse
             test_obj_solution = Decoder(test_mse_list.index(test_min_mse),action,symbol_set).getString()#tree_table[test_mse_list.index(test_min_mse)].getSolution()
         if test_obj_reward<test_max_reward:

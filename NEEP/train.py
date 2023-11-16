@@ -94,6 +94,8 @@ def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 
 
     for i in range(Epoch):
         action , log_prob1_list = actorNet()
+        print(action)
+        input()
 
         root = []
         train_mse_list = []

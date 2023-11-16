@@ -36,38 +36,38 @@ problemSet = {
     }
 
 if __name__ == '__main__':
-    # 开始计时
-    start_time = time.time()
-    # 获取cpu数目
-    nb_cpu = multiprocessing.cpu_count()
-    # # 创建cpu进程池
-    pool = multiprocessing.Pool(nb_cpu - 1)
+    # # 开始计时
+    # start_time = time.time()
+    # # 获取cpu数目
+    # nb_cpu = multiprocessing.cpu_count()
+    # # # 创建cpu进程池
+    # pool = multiprocessing.Pool(nb_cpu - 1)
+    #
+    # # 设置Epoch 、 独立重复实验次数
+    # batch_size = 100
+    # layer_num = 1
+    # learning_rate = 1e-4
+    # Epoch = 100  # 代数
+    # count = 30  # 独立重复次数
+    # cou = []
+    # for i in range(count):
+    #     cou.append(i)
+    # # 对problemSet里的每个实验进行30次独立重复实验
+    # # 可以根据自身需要对实验进行删减，直接将probleSet里的实验进行注释即可
+    # for problem in problemSet:
+    #     name = problemSet[problem][0]
+    #     do = partial(train, name, Epoch, learning_rate,batch_size, layer_num)
+    #     #do = partial(train,name=problemSet[problem][0],Epoch=Epoch,learning_rate = learning_rate,batch_size=batch_size,layer_num=layer_num)
+    #     # 并行计算
+    #     pool.map(do,cou)
+    #     print(str(problem) + " 任务完成")
+    #     print("当前时间：" + str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
+    # # 结束计时
+    # end_time = time.time()
+    # # 计算时间差
+    # execution_time = end_time - start_time
+    # # 输出结果
+    # print(f"执行时间：{execution_time}秒")
 
-    # 设置Epoch 、 独立重复实验次数
-    batch_size = 100
-    layer_num = 1
-    learning_rate = 1e-4
-    Epoch = 100  # 代数
-    count = 30  # 独立重复次数
-    cou = []
-    for i in range(count):
-        cou.append(i)
-    # 对problemSet里的每个实验进行30次独立重复实验
-    # 可以根据自身需要对实验进行删减，直接将probleSet里的实验进行注释即可
-    for problem in problemSet:
-        name = problemSet[problem][0]
-        do = partial(train, name, Epoch, learning_rate,batch_size, layer_num)
-        #do = partial(train,name=problemSet[problem][0],Epoch=Epoch,learning_rate = learning_rate,batch_size=batch_size,layer_num=layer_num)
-        # 并行计算
-        pool.map(do,cou)
-        print(str(problem) + " 任务完成")
-        print("当前时间：" + str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))))
-    # 结束计时
-    end_time = time.time()
-    # 计算时间差
-    execution_time = end_time - start_time
-    # 输出结果
-    print(f"执行时间：{execution_time}秒")
 
-
-    #train(name="Sphere5",Epoch=20,learning_rate = 1e-3,batch_size = 50,layer_num = 1,cou=0)
+    train(name="Sphere5",Epoch=20,learning_rate = 1e-3,batch_size = 100 ,layer_num = 1,cou=0)

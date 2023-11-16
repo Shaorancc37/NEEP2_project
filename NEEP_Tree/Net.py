@@ -87,7 +87,6 @@ class Net(nn.Module):
             output = self.bn(output)
             # TODO 这部分是计算 符号概率 的输出
             output_symbol = self.fc_output(self.gaussian_activation(output))
-
             # 得到符号的概率输出
             output_symbol1 = F.softmax(output_symbol, dim=1)
             # 建立分布
@@ -107,13 +106,14 @@ class Net(nn.Module):
                 action = dist1.sample()
                 action = action + torch.tensor(self.symbol_set.input_symbols[0])
                 res.append(action)
+
             # 计算符号生成的log_p
             log_prob = dist.log_prob(action)
             log_prob_list.append(log_prob)
             # TODO 更新树表
             tree_table = updateTreeTable(tree_table,father_list,now_nodepos_list,action,self.symbol_set,self.batch_size)
 
-        #print(res)
+
         # print(log_prob_list)
 
         return res , torch.stack(log_prob_list)
@@ -122,6 +122,9 @@ class Net(nn.Module):
 
 
 if __name__ == '__main__':
+    torch.manual_seed(0)
+    torch.cuda.manual_seed_all(0)
+    np.random.seed(0)
     symbol_list = None
     if symbol_list is None:
         symbol_list = [
@@ -149,5 +152,5 @@ if __name__ == '__main__':
 
 
 
-    net = Net(10,32,32,1,symbol_set.length,symbol_set,31,None)
+    net = Net(2,32,32,1,symbol_set.length,symbol_set,31,None)
     net()

@@ -90,11 +90,14 @@ class Net(nn.Module):
                 action = dist1.sample()
                 action = action + torch.tensor(self.symbol_set.input_symbols[0])
                 res.append(action)
+
+
             # 计算符号生成的log_p
             log_prob = dist.log_prob(action)
             log_prob_list.append(log_prob)
 
-        #print(res)
+        print(res)
+        input()
         # print(log_prob_list)
 
 
@@ -104,6 +107,10 @@ class Net(nn.Module):
 
 
 if __name__ == '__main__':
+    torch.manual_seed(0)
+    torch.cuda.manual_seed_all(0)
+    np.random.seed(0)
+
     symbol_list = None
     if symbol_list is None:
         symbol_list = [
@@ -118,7 +125,7 @@ if __name__ == '__main__':
         ]
 
     # 创建输入变量 x1,x2,...,xi
-    for i in range(10):
+    for i in range(5):
         symbol_list.append(Symbol(None, "x" + str(i + 1), 0, x_index=i + 1))
 
     # for item in symbol_list:
@@ -131,5 +138,6 @@ if __name__ == '__main__':
 
 
 
-    net = Net(10,32,32,1,symbol_set.length,symbol_set,31,None)
+
+    net = Net(2,32,32,1,symbol_set.length,symbol_set,31,None)
     net()

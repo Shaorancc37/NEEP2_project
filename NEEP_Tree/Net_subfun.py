@@ -48,7 +48,7 @@ def getInput(tree_table,batch_size,input_size,symbol_set):
         input_net = None
         # 树表为空
         if tree_table[i].length == 0:
-            input_list = torch.cat((input_list, torch.zeros(3, dtype=torch.int64)), dim=0)
+            input_list = torch.cat((input_list, torch.ones(3, dtype=torch.int64)), dim=0)
             father_node_list.append(-5)
             bro_node_list.append(0)
             now_node_pos_list.append(0)
