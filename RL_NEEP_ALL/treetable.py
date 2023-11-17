@@ -1,4 +1,5 @@
-from node import Node
+from RL_NEEP_ALL.node import Node
+
 
 # 根据树表tree_table来递归建立树
 def creatTree(tree_table, root_index):
@@ -88,14 +89,21 @@ class TreeTable:
         root = creatTree(self, root_index)
         return root
 
+    def getSolution(self):
+        ans = []
+        for item in self.rows:
+            ans.append(item.symbol.name)
+        return ans
+
 
 class Row:
 
-    def __init__(self,position,left_pos=None,right_pos=None,father_pos=None,symbol=None,arg_num=0,root_type=False):
+    def __init__(self,position,left_pos=None,right_pos=None,father_pos=None,symbol=None,symbol_pos=None,arg_num=0,root_type=False):
         self.position = position
         self.left_pos = left_pos
         self.right_pos = right_pos
         self.father_pos = father_pos
         self.symbol = symbol
+        self.symbol_pos = symbol_pos
         self.arg_num = arg_num
         self.root_type = root_type

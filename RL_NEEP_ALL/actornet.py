@@ -49,6 +49,8 @@ class ActorNet(nn.Module):
 
         # 定义LSTM网络结构
         self.lstm = nn.LSTM(input_size,hidden_size, num_layers, batch_first=True)
+        # 添加BatchNormalization层
+        self.bn = nn.BatchNorm1d(hidden_size)
         # 定义输出层
             # fc_output是符号对应的输出
         self.fc_output = nn.Linear(hidden_size,output_size)
@@ -92,13 +94,14 @@ class ActorNet(nn.Module):
 
         # 判断是否有树还没生长完
         while judge(finished) :
-            #print("生成+1")
         # 获取输入
             lstm_input , lstm_type = getInput(tree_table,specific_node_index,self.batch_size)
         # 送入网络获得输出
             x = self.get_lstm_input(lstm_input)
             x = self.input_layer(x.to(torch.float32))
-            output, (h_out, c_out) = self.lstm(x)
+            output, (h_out, c_out) = self.lstm(x,(h_out, c_out))
+            # 进行batchnorm的计算
+            output = self.bn(output)
             # TODO 这部分是计算 符号概率 的输出
             output_symbol = self.fc_output(self.gaussian_activation(output))
             # 得到符号的概率输出

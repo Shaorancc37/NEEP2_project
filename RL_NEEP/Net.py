@@ -8,8 +8,8 @@ import torch.nn.functional as F
 import torch.distributions as dist
 from torch.distributions import Categorical
 
-from RL_NEEP2 import symbol
-from RL_NEEP2.symbol import Symbol, SymbolLibrary
+from RL_NEEP_ALL import symbol
+from RL_NEEP_ALL.symbol import Symbol, SymbolLibrary
 
 
 class GaussianActivation(nn.Module):

@@ -1,7 +1,10 @@
+import warnings
+
 import torch
 import numpy as np
 from torch.distributions import Categorical
 from treetable import TreeTable , Row
+warnings.filterwarnings("ignore", category=UserWarning)
 
 def getTerimIndex(symbol_set):
     temp = symbol_set.input_symbols
@@ -9,26 +12,60 @@ def getTerimIndex(symbol_set):
     end = temp[-1]
     return star , end
 
-def getInput(tree_table,specific_node_index,batch_size):
+def getInput(tree_table,specific_node_index,batch_size,One_Hot_length):
     #print(specific_node_index)
     input_list = torch.tensor([],dtype=torch.int64)
     input_type_list = []
     for i in range(batch_size):
         if tree_table[i].length == 0 :
-            input_list = torch.cat((input_list,torch.zeros(3, dtype=torch.int64)),dim=0)
+            father = torch.zeros(One_Hot_length,dtype=torch.int64)
+            bro = torch.zeros(One_Hot_length,dtype=torch.int64)
+            input_list = torch.cat((input_list,torch.ones(3, dtype=torch.int64),father,bro),dim=0)
         else :
             if tree_table[i].rows[specific_node_index[i]].left_pos is None:
+
                 input_type_list.append(1)
-                input_list = torch.cat((input_list,torch.tensor([1, 0, 0], dtype=torch.int64).unsqueeze(0)),dim=0)
+                father = tree_table[i].rows[specific_node_index[i]].symbol_pos
+                bro = torch.zeros(One_Hot_length,dtype=torch.int64)
+                father = torch.nn.functional.one_hot(torch.tensor(father), One_Hot_length)
+                temp = torch.cat((father,bro,torch.tensor([1, 0, 0], dtype=torch.int64)),dim=0).unsqueeze(0)
+                input_list = torch.cat((input_list,temp),dim=0)
             elif tree_table[i].rows[specific_node_index[i]].right_pos is None:
+
                 input_type_list.append(2)
-                input_list = torch.cat((input_list,torch.tensor([0, 1, 0], dtype=torch.int64).unsqueeze(0)),dim=0)
+                father = tree_table[i].rows[specific_node_index[i]].symbol_pos
+                bro = tree_table[i].rows[specific_node_index[i]].left_pos
+                bro = tree_table[i].rows[bro].symbol_pos
+                father = torch.nn.functional.one_hot(torch.tensor(father), One_Hot_length)
+                bro = torch.nn.functional.one_hot(torch.tensor(bro), One_Hot_length)
+
+                temp = torch.cat((father, bro, torch.tensor([0, 1, 0], dtype=torch.int64)), dim=0).unsqueeze(0)
+                input_list = torch.cat((input_list, temp), dim=0)
             elif tree_table[i].rows[specific_node_index[i]].father_pos is None:
+
                 input_type_list.append(3)
-                input_list = torch.cat((input_list,torch.tensor([0, 0, 1], dtype=torch.int64).unsqueeze(0)),dim=0)
+                left = tree_table[i].rows[specific_node_index[i]].left_pos
+                right = tree_table[i].rows[specific_node_index[i]].right_pos
+
+                if left == -1:
+                    left = torch.zeros(One_Hot_length,dtype=torch.int64)
+                else:
+                    left = tree_table[i].rows[left].symbol_pos
+                    left = torch.nn.functional.one_hot(torch.tensor(left), One_Hot_length)
+                if right == -1:
+                    right = torch.zeros(One_Hot_length,dtype=torch.int64)
+                else:
+                    right = tree_table[i].rows[right].symbol_pos
+                    right = torch.nn.functional.one_hot(torch.tensor(right), One_Hot_length)
+
+                temp = torch.cat((left, right, torch.tensor([0, 0, 1], dtype=torch.int64)), dim=0).unsqueeze(0)
+                input_list = torch.cat((input_list, temp), dim=0)
             else:
                 input_type_list.append(4)
-                input_list = torch.cat((input_list,torch.tensor([0, 0, 1], dtype=torch.int64).unsqueeze(0)),dim=0)
+                father = torch.zeros(One_Hot_length, dtype=torch.int64)
+                bro = torch.zeros(One_Hot_length, dtype=torch.int64)
+                temp = torch.cat((father, bro, torch.tensor([0, 1, 0], dtype=torch.int64)), dim=0).unsqueeze(0)
+                input_list = torch.cat((input_list, temp), dim=0)
 
 
     return input_list.reshape(batch_size,-1) , input_type_list
@@ -61,6 +98,7 @@ def updateTreeTable(lstm_input_type ,symbol_set,output_symbol,action1,action2,tr
                 new_row = Row(tree_table[i].length)
                 new_row.symbol = temp_symbol
                 new_row.arg_num = temp_symbol.arg_num
+                new_row.symbol_pos = action1[i]
                 if new_row.arg_num == 0:  # 终止节点
                     new_row.left_pos = -1
                     new_row.right_pos = -1
@@ -85,6 +123,7 @@ def updateTreeTable(lstm_input_type ,symbol_set,output_symbol,action1,action2,tr
                 new_row = Row(tree_table[i].length)
                 new_row.symbol = temp_symbol
                 new_row.arg_num = temp_symbol.arg_num
+                new_row.symbol_pos = action1[i]
                 if new_row.arg_num == 0:  # 终止节点，左右都填-1
                     new_row.left_pos = -1
                     new_row.right_pos = -1
@@ -112,6 +151,7 @@ def updateTreeTable(lstm_input_type ,symbol_set,output_symbol,action1,action2,tr
                 new_row = Row(tree_table[i].length)
                 new_row.symbol = temp_symbol
                 new_row.arg_num = temp_symbol.arg_num
+                new_row.symbol_pos = action1[i]
                 if new_row.arg_num == 0:  # 终止节点，左右都填-1
                     new_row.left_pos = -1
                     new_row.right_pos = -1

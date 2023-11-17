@@ -1,7 +1,7 @@
 import torch
 
-from RL_NEEP2.treetable import TreeTable , Row
-from RL_NEEP2.node import Node
+from RL_NEEP_ALL.treetable import TreeTable , Row
+from RL_NEEP_ALL.node import Node
 # 通过这个函数获取 特定节点、父节点、兄弟节点、当前生成节点位置
 def getNowPosition(tree_table):
     specific_node = None

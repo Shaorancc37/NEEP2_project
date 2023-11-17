@@ -1,3 +1,4 @@
+from dataFrame import DataFrame, creatFile
 from symbol import Symbol
 from symbol import SymbolLibrary
 import numpy as np
@@ -6,7 +7,7 @@ from actornet import ActorNet
 from node import TreeDecoder
 import torch
 import time
-
+from pathlib import Path
 
 device = ("cpu")
 
@@ -33,7 +34,26 @@ def get_data(fun_name):
     return train_x_list,train_y_list,test_x_list,test_y_list
 
 
-def train(name,Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 1,max_height = 4):
+def updateSeed(cou):
+    torch.manual_seed(cou)
+    torch.cuda.manual_seed_all(cou)
+    np.random.seed(cou)
+
+
+def train(name="",Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 1,cou=0):
+    updateSeed(cou)
+    print("实验 ： "+str(name)+" 开始")
+    # 记录每个Epoch数据
+    Train_MSE_List = []
+    Train_Best_MSE_List = []
+    Train_Reward_List = []
+    Train_Best_Reward_List = []
+    Train_BestSolution = []
+    Test_MSE_List = []
+    Test_Best_MSE_List = []
+    Test_Reward_List = []
+    Test_Best_Reward_List = []
+    Test_BestSolution = []
 
     # 获取训练集 和 测试集数据
     train_x_list, train_y_list, test_x_list, test_y_list = get_data(name)
@@ -60,19 +80,20 @@ def train(name,Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 1,m
 
     symbol_set = SymbolLibrary(symbol_list)
 
-    actorNet = ActorNet(batch_size,32,32,layer_num,symbol_set.length,symbol_set,max_height,device).to(device)
+    actorNet = ActorNet(batch_size,32,32,layer_num,symbol_set.length,symbol_set,4,device).to(device)
     optimizer = torch.optim.AdamW(actorNet.parameters(),lr=learning_rate)  # 使用Adam优化器
 
-    obj_mse = np.inf
-    obj_reward = 0
+    train_obj_mse = np.inf
+    train_obj_reward = 0
+    train_obj_solution = None
+    test_obj_mse = np.inf
+    test_obj_reward = 0
+    test_obj_solution = None
 
     for i in range(Epoch):
-        # 记录开始时间
-        start_time = time.time()
         # TODO 网络需要优化加速75行 耗时2.7s
         tree_table , log_prob1_list, log_prob2_list = actorNet()
         # TODO 将一个Batch的树表解码为树，分别在 训练集 和 测试集 上计算MSE、NMSE、NRMSE、Reward等值
-
         # TODO 网络需要优化加速84 - 105行 耗时2.7s
         root = []
         train_mse_list = []
@@ -97,45 +118,73 @@ def train(name,Epoch = 100,learning_rate = 1e-3,batch_size = 100,layer_num = 1,m
             test_reward_list.append(test_reward)
 
         # 得到这一个Epoch中，整个Batch中的最优值,并更新历史最优
-        min_mse = min(train_mse_list)
-        max_reward = max(train_reward_list)
-        if obj_mse>min_mse:
-            obj_mse = min_mse
-        if obj_reward<max_reward:
-            obj_reward = max_reward
-            #print(obj_reward)
+        train_min_mse = min(train_mse_list)
+        train_max_reward = max(train_reward_list)
+        test_min_mse = min(test_mse_list)
+        test_max_reward = max(test_reward_list)
+        # 更新全局最优解
+        if train_obj_mse>train_min_mse:
+            train_obj_mse = train_min_mse
+            train_obj_solution = tree_table[train_mse_list.index(train_min_mse)].getSolution()
+        if train_obj_reward<train_max_reward:
+            train_obj_reward = train_max_reward
+        if test_obj_mse>test_min_mse:
+            test_obj_mse = test_min_mse
+            test_obj_solution = tree_table[test_mse_list.index(test_min_mse)].getSolution()
+        if test_obj_reward<test_max_reward:
+            test_obj_reward = test_max_reward
+
+        Train_MSE_List.append(train_min_mse)
+        Train_Best_MSE_List.append(train_obj_mse)
+        Train_Reward_List.append(train_max_reward)
+        Train_Best_Reward_List.append(train_obj_reward)
+        Train_BestSolution.append(tree_table[train_mse_list.index(train_min_mse)].getSolution())
+        Test_MSE_List.append(test_min_mse)
+        Test_Best_MSE_List.append(test_obj_mse)
+        Test_Reward_List.append(test_max_reward)
+        Test_Best_Reward_List.append(test_obj_reward)
+        Test_BestSolution.append(tree_table[test_mse_list.index(test_min_mse)].getSolution())
 
 
-        print(" Epoch = "+str(i+1)+"  best_mse = "+str(obj_mse))
-        print(" Epoch = " + str(i + 1)+ "  best_reward = " + str(obj_reward))
-
-
+        # print(" Epoch = "+str(i+1)+"  best_mse = "+str(obj_mse))
+        # print(" Epoch = " + str(i + 1)+ "  best_reward = " + str(obj_reward))
         reward = torch.tensor(train_reward_list)
         baseline = torch.sum(reward)/batch_size
 
         # 更新 符号概率 途径网络
         reinforce_loss1 = torch.sum((reward - baseline) * log_prob1_list.sum(dim=0)) / batch_size
         reinforce_loss2 = torch.sum((reward - baseline) * log_prob2_list.sum(dim=0)) / batch_size
-        loss = reinforce_loss1 + reinforce_loss2
-        #print(loss)
+        loss = -1*(reinforce_loss1 + reinforce_loss2)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
+    # 创建存放训练集和测试集的文件夹
+    path = "../result/log/"+name
+    train_path,test_path = creatFile(path)
 
-        # 更新 位置概率 途径网络
-        # reinforce_loss2 = torch.sum((reward - baseline) * log_prob2_list.sum(dim=0)) / batch_size
-        # optimizer.zero_grad()
-        # reinforce_loss2.backward()
-        # optimizer.step()
-
-        # 记录结束时间
-        end_time = time.time()
-        # 计算代码执行时间
-        execution_time = end_time - start_time
-        # 打印执行时间
-        print("执行时间:", execution_time, "秒")
-
+    # 写入文件
+    DateLog = DataFrame(cou,
+                        train_path,
+                        test_path,
+                        Train_MSE_List,
+                        Train_Best_MSE_List,
+                        Train_Reward_List,
+                        Train_Best_Reward_List,
+                        Train_BestSolution,
+                        Test_MSE_List,
+                        Test_Best_MSE_List,
+                        Test_Reward_List,
+                        Test_Best_Reward_List,
+                        Test_BestSolution,
+                        train_obj_solution,
+                        test_obj_solution
+                        )
+    DateLog.saveTrainData()
+    DateLog.saveTrainBest()
+    DateLog.saveTestData()
+    DateLog.saveTestBest()
+    print("保存完毕")
 
 
 

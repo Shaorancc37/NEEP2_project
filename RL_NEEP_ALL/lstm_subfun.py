@@ -1,5 +1,4 @@
 import torch
-from numba import jit, prange
 import numpy as np
 from torch.distributions import Categorical
 from treetable import TreeTable , Row
@@ -10,12 +9,11 @@ def getTerimIndex(symbol_set):
     end = temp[-1]
     return star , end
 
-#@jit(nopython=False, parallel=True)
 def getInput(tree_table,specific_node_index,batch_size):
     #print(specific_node_index)
     input_list = torch.tensor([],dtype=torch.int64)
     input_type_list = []
-    for i in prange(batch_size):
+    for i in range(batch_size):
         if tree_table[i].length == 0 :
             input_list = torch.cat((input_list,torch.zeros(3, dtype=torch.int64)),dim=0)
         else :
@@ -35,7 +33,6 @@ def getInput(tree_table,specific_node_index,batch_size):
 
     return input_list.reshape(batch_size,-1) , input_type_list
 
-#@jit(nopython=True, parallel=True)
 def getSpecificNode(tree_table, specific_node_index):
     # 从上到下查树表，看哪一行的左右父有空缺，这行就是特定节点
     for i in range(specific_node_index,tree_table.length):
@@ -50,10 +47,9 @@ def getSpecificNode(tree_table, specific_node_index):
 
 
 
-#@jit(nopython=True, parallel=True)
 def updateTreeTable(lstm_input_type ,symbol_set,output_symbol,action1,action2,tree_table,specific_node_index,batch_size,max_height,finished):
 
-    for i in prange(batch_size):
+    for i in range(batch_size):
         # 如果该树已经完成生成，则直接跳过
         if finished[i] == 1:
             continue
@@ -78,7 +74,7 @@ def updateTreeTable(lstm_input_type ,symbol_set,output_symbol,action1,action2,tr
                 # 得到终止节点的下标区域
                 star_index, end_index = getTerimIndex(symbol_set)
                 # 建立分布，采样
-                temp_dist = Categorical(output_symbol[0][star_index:])
+                temp_dist = Categorical(output_symbol[i][star_index:])
                 action = temp_dist.sample()
                 action = action + torch.tensor(star_index)
                 # 在action1中更新action

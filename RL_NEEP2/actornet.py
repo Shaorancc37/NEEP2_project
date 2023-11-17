@@ -1,12 +1,15 @@
-
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from RL_NEEP2 import symbol
+from RL_NEEP2.symbol import Symbol, SymbolLibrary
 from lstm_subfun import updateTreeTable, getInput ,updateFinished
 from treetable import TreeTable , Row
 import torch.distributions as dist
 from torch.distributions import Categorical
+device = ("cpu")
 
 class GaussianActivation(nn.Module):
     def forward(self, x):
@@ -44,8 +47,8 @@ class ActorNet(nn.Module):
     def __init__(self,batch_size,input_size, hidden_size, num_layers, output_size, symbol_set , max_height, device):
         super(ActorNet, self).__init__()
         # 定义输入的embedding层
-        self.input_embedding_layer = nn.Embedding(2,8)
-        self.input_layer = nn.Linear(3*8,input_size)
+        self.input_embedding_layer = nn.Embedding(symbol_set.length,2)
+        self.input_layer = nn.Linear(2*(3+2*symbol_set.length),input_size)
 
         # 定义LSTM网络结构
         self.lstm = nn.LSTM(input_size,hidden_size, num_layers, batch_first=True)
@@ -95,7 +98,8 @@ class ActorNet(nn.Module):
         # 判断是否有树还没生长完
         while judge(finished) :
         # 获取输入
-            lstm_input , lstm_type = getInput(tree_table,specific_node_index,self.batch_size)
+            lstm_input , lstm_type = getInput(tree_table,specific_node_index,self.batch_size,self.symbol_set.length)
+
         # 送入网络获得输出
             x = self.get_lstm_input(lstm_input)
             x = self.input_layer(x.to(torch.float32))
@@ -140,3 +144,34 @@ class ActorNet(nn.Module):
 
 
         return tree_table , torch.stack(log_prob1_list) , torch.stack(log_prob2_list)
+
+if __name__ == '__main__':
+
+    Epoch = 100
+    learning_rate = 1e-3
+    batch_size = 2
+    layer_num = 1
+    cou = 0
+
+    # 创建符号集
+    symbol_list = None
+    if symbol_list is None:
+        symbol_list = [
+            Symbol(np.add, '+', 2),
+            Symbol(np.subtract, '-', 2),
+            Symbol(np.multiply, '*', 2),
+            Symbol(symbol.protected_div, '/', 2),
+            Symbol(np.sin, 'sin', 1),
+            Symbol(np.cos, 'cos', 1),
+            Symbol(symbol.protected_log, 'log', 1),
+            Symbol(symbol.protected_exp, 'exp', 1)
+        ]
+
+    # 创建输入变量 x1,x2,...,xi
+    for i in range(5):
+        symbol_list.append(Symbol(None, "x" + str(i + 1), 0, x_index=i + 1))
+
+    symbol_set = SymbolLibrary(symbol_list)
+
+    actorNet = ActorNet(batch_size, 32, 32, layer_num, symbol_set.length, symbol_set, 4, device).to(device)
+    tree_table, log_prob1_list, log_prob2_list = actorNet()

@@ -1,6 +1,6 @@
 from queue import Queue
 
-from RL_NEEP2.node import Node
+from RL_NEEP_ALL.node import Node
 
 
 def getString(index, action, symbol_set):

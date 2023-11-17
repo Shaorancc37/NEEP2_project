@@ -1,12 +1,12 @@
 from NEEP.Net import Net
 from NEEP.decoder import Decoder
-from RL_NEEP2 import symbol
-from RL_NEEP2.dataFrame import DataFrame, creatFile
-from RL_NEEP2.symbol import Symbol
-from RL_NEEP2.symbol import SymbolLibrary
+from RL_NEEP_ALL import symbol
+from RL_NEEP_ALL.dataFrame import DataFrame, creatFile
+from RL_NEEP_ALL.symbol import Symbol
+from RL_NEEP_ALL.symbol import SymbolLibrary
 import numpy as np
 
-from RL_NEEP2.node import TreeDecoder
+from RL_NEEP_ALL.node import TreeDecoder
 import torch
 import time
 from pathlib import Path
