@@ -1,5 +1,5 @@
-from NEEP.Net import Net
-from NEEP.decoder import Decoder
+from RL_NEEP.Net import Net
+from RL_NEEP.decoder import Decoder
 from RL_NEEP_ALL import symbol
 from RL_NEEP_ALL.dataFrame import DataFrame, creatFile
 from RL_NEEP_ALL.symbol import Symbol
